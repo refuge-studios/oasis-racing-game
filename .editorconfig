@@ -1,0 +1,68 @@
+# EditorConfig is awesome: https://editorconfig.org
+root = true
+
+# ------------------------
+# Default settings for all files
+# ------------------------
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2 
+
+# ------------------------
+# C/C++ source files
+# ------------------------
+[*.{cpp,cxx,cc,c,h,hpp,hxx,inl}]
+indent_style = space
+indent_size = 2
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ------------------------
+# JSON files
+# ------------------------
+[*.json]
+indent_style = space
+indent_size = 2
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ------------------------
+# Scripts
+# ------------------------
+[*.sh]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+[*.bat]
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+[*.ps1]
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+[*.py]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# ------------------------
+# Markdown / text files
+# ------------------------
+[*.{md,txt}]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true

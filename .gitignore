@@ -1,0 +1,68 @@
+# ------------------------
+# Operating system files
+# ------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ------------------------
+# Build / CMake
+# ------------------------
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake-build-*/
+Makefile
+cmake_install.cmake
+*.cmake
+
+# ------------------------
+# IDE / Editor
+# ------------------------
+# VS Code
+.vscode/
+# CLion
+.idea/
+*.iml
+
+# ------------------------
+# Logs
+# ------------------------
+*.log
+
+# ------------------------
+# Temporary / system files
+# ------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ------------------------
+# Game artifacts
+# ------------------------
+/manifest.json
+oasis
+
+# ------------------------
+# User-specific configs
+# ------------------------
+/*.user
+/*.suo
+/*.userprefs
+
+# ------------------------
+# Other
+# ------------------------
+*.bak
+*.old
+*.orig

@@ -1,0 +1,46 @@
+---
+# Use modern C++20 features
+Language: Cpp
+Standard: c++20
+
+# Checks to enable
+Checks: >
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  bugprone-*
+
+# Exclude certain checks
+CheckOptions:
+  - key:             readability-identifier-naming.IgnoreMainLikeFunctions
+    value:           1
+  - key:             modernize-use-trailing-return-type.MinTypeNameLength
+    value:           3
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           16
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoreEnums
+    value:           1
+
+# Treat warnings as errors (optional)
+WarningsAsErrors: ''
+
+# Header filter (limit analysis to project files)
+HeaderFilterRegex: '.*'
+
+# Format fixes
+FormatStyle: file
+
+# Apply fixes automatically if using --fix
+ApplyFixes: true
+
+# Extra options
+ExtraArgs:
+  - -Wall
+  - -Wextra
+  - -Wshadow
+  - -Wconversion
+  - -Wsign-conversion
+  - -pedantic

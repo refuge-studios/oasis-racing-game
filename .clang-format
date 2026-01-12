@@ -1,0 +1,21 @@
+# Use LLVM style as base, with C++20 improvements
+BasedOnStyle: LLVM
+Standard: c++20
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: InlineOnly
+ColumnLimit: 100
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignOperands: true
+AlignTrailingComments: true
+PointerAlignment: Left
+SortIncludes: true
+IncludeBlocks: Preserve
+DerivePointerAlignment: false
+ReflowComments: true
+AllowAllParametersOfDeclarationOnNextLine: false
+SpaceBeforeParens: ControlStatements
+Cpp11BracedListStyle: true

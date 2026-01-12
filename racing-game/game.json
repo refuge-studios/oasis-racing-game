@@ -1,0 +1,5 @@
+{
+    "assets": "assets/",
+    "game_id": "racing-game",
+    "module": "build/game_module.so"
+}
