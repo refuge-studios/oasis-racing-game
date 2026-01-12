@@ -5,14 +5,14 @@
             "local_path": "assets/car.svdag",
             "path": "games/racing-game/assets/car.svdag",
             "size": 1497296,
-            "upload": true
+            "upload": false
         },
         {
             "hash": "52a5ab670aefec628806b3ab27cbd3a4b8e533b43d74c751d89a9f84f286c217",
             "local_path": "assets/track.svdag",
             "path": "games/racing-game/assets/track.svdag",
             "size": 80605732,
-            "upload": true
+            "upload": false
         }
     ],
     "game_id": "racing-game",
