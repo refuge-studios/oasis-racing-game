@@ -17,7 +17,7 @@ $RECYCLE.BIN/
 # ------------------------
 # Build / CMake
 # ------------------------
-/build/
+build
 /CMakeFiles/
 /CMakeCache.txt
 /cmake-build-*/
@@ -46,12 +46,6 @@ cmake_install.cmake
 *.temp
 *.swp
 *.swo
-
-# ------------------------
-# Game artifacts
-# ------------------------
-/manifest.json
-oasis
 
 # ------------------------
 # User-specific configs

@@ -25,18 +25,40 @@ target_include_directories(racing_game
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-find_package(glm REQUIRED)
-
 # Dependencies
+find_package(glm REQUIRED)
 target_link_libraries(racing_game
-    PRIVATE
-        glm::glm
+    PRIVATE glm::glm
 )
 
 # --------------------------------------------------
 # Output configuration
 # --------------------------------------------------
+# Ensure engine loads a consistent name: racing_game
 set_target_properties(racing_game PROPERTIES
-    OUTPUT_NAME "game_module" # engine loads a consistent name
-    PREFIX ""                 # no lib prefix (libgame_module.so → game_module.so)
+    OUTPUT_NAME "racing-game"  # All platforms
+    PREFIX ""                  # Remove "lib" prefix
+)
+
+# Platform-specific output directories
+set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+
+if(WIN32)
+    set_target_properties(racing_game PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
+    )
+elseif(APPLE)
+    set_target_properties(racing_game PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
+    )
+elseif(UNIX)
+    set_target_properties(racing_game PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
+    )
+endif()
+
+
+# Optional: add position-independent code for shared libraries
+set_target_properties(racing_game PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
 )
