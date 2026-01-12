@@ -4,18 +4,18 @@
 
 A simple example game demonstrating how to build and publish a game module using the **Oasis Game API**.
 
-This project is intended as a **reference implementation** for developers creating games on the Oasis platform.
+This project serves as a **reference implementation** for developers creating games on the Oasis platform.
 
 ---
 
 ## Overview
 
-**Oasis Racing Game** shows:
+**Oasis Racing Game** demonstrates:
 
-* How to structure a game module for Oasis
-* How to integrate with the Oasis Game API
-* How to build a shared game module (`.so / .dll / .dylib`)
-* How to publish a game using the Oasis CLI
+* Structuring a game module for Oasis
+* Integrating with the Oasis Game API
+* Building a platform-specific shared game module (`.so / .dll / .dylib`)
+* Publishing a game using **Oasis CLI** with incremental asset/module uploads
 
 It is intentionally minimal and focuses on **clarity over features**.
 
@@ -28,8 +28,7 @@ It is intentionally minimal and focuses on **clarity over features**.
 * Oasis Engine headers / SDK
 * Oasis CLI
 
-👉 Oasis CLI repository:
-[https://github.com/refuge-studios/oasis-cli](https://github.com/refuge-studios/oasis-cli)
+Oasis CLI repository: [https://github.com/refuge-studios/oasis-cli](https://github.com/refuge-studios/oasis-cli)
 
 ---
 
@@ -40,8 +39,13 @@ racing-game/
 ├─ assets/
 │  ├─ car.svdag
 │  └─ track.svdag
-├─ build/
-│  └─ game_module.so    # Game Module
+├─ bin/
+│  ├─ linux/
+│  │  └─ game_module.so
+│  ├─ windows/
+│  │  └─ game_module.dll
+│  └─ macos/
+│     └─ game_module.dylib
 ├─ src/
 │  └─ main.cpp          # Game logic entry point
 ├─ include/             # Public headers
@@ -51,12 +55,23 @@ racing-game/
 └─ README.md
 ```
 
-Build output will produce a game module:
+**Manifest example (`manifest.json`):**
 
-```
-game_module.so   (Linux)
-game_module.dll  (Windows)
-game_module.dylib (macOS)
+```json
+{
+    "game_id": "racing-game",
+    "name": "Racing Game",
+    "version": "0.1.0",
+    "modules": {
+        "linux": "bin/linux/game_module.so",
+        "macos": "bin/macos/game_module.dylib",
+        "windows": "bin/windows/game_module.dll"
+    },
+    "assets": [
+        { "path": "assets/car.svdag", "sha256": "SHA256_HASH_CAR", "size": 12345 },
+        { "path": "assets/track.svdag", "sha256": "SHA256_HASH_TRACK", "size": 67890 }
+    ]
+}
 ```
 
 ---
@@ -69,6 +84,10 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
+Ensure the output matches the platform-specific paths in `manifest.json`.
+
+---
+
 ## Publishing with Oasis CLI
 
 1. **Initialize a project**
@@ -80,15 +99,7 @@ cd racing-game
 
 2. **Copy or build the module**
 
-Ensure your compiled module matches the path in `game.json`:
-
-```json
-{
-  "game_id": "racing-game",
-  "module": "build/game_module.so",
-  "assets": "assets"
-}
-```
+Make sure your compiled module matches the manifest's platform-specific paths.
 
 3. **Publish**
 
@@ -96,11 +107,17 @@ Ensure your compiled module matches the path in `game.json`:
 oasis publish
 ```
 
-For a dry run:
+For a dry run (shows what would be uploaded without sending files):
 
 ```bash
 oasis publish --dry-run
 ```
+
+Oasis CLI will automatically:
+
+* Upload changed modules and assets
+* Skip unchanged files using SHA256 hashes in `manifest.json`
+* Update the manifest on the server
 
 ---
 
@@ -109,23 +126,20 @@ oasis publish --dry-run
 * Game module lifecycle
 * Engine ↔ game boundary
 * Minimal API usage
-* Incremental publishing via manifest hashing
+* Incremental publishing with platform-specific modules and asset hashes
 
 ---
 
 ## Intended Audience
 
-This project is for:
-
 * Developers new to Oasis
 * Engine contributors
-* Anyone wanting a minimal starting point for an Oasis game
+* Anyone needing a minimal starting point for an Oasis game
 
-It is **not** intended to be a full game.
+> Note: This project is **not a full game**, just a reference example.
 
 ---
 
 ## Related Projects
 
-* **Oasis CLI**
-  [https://github.com/refuge-studios/oasis-cli](https://github.com/refuge-studios/oasis-cli)
+* **Oasis CLI** – [https://github.com/refuge-studios/oasis-cli](https://github.com/refuge-studios/oasis-cli)

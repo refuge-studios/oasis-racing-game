@@ -1,24 +1,20 @@
 {
     "assets": [
         {
-            "hash": "9a64e4cc854f27b5a1dc03410afe4d814195ca682969f5cc4b517c79ecd5154b",
-            "local_path": "assets/car.svdag",
-            "path": "games/racing-game/assets/car.svdag",
-            "size": 1497296,
-            "upload": false
+            "path": "assets/car.svdag",
+            "sha256": "9a64e4cc854f27b5a1dc03410afe4d814195ca682969f5cc4b517c79ecd5154b",
+            "size": 1497296
         },
         {
-            "hash": "52a5ab670aefec628806b3ab27cbd3a4b8e533b43d74c751d89a9f84f286c217",
-            "local_path": "assets/track.svdag",
-            "path": "games/racing-game/assets/track.svdag",
-            "size": 80605732,
-            "upload": false
+            "path": "assets/track.svdag",
+            "sha256": "52a5ab670aefec628806b3ab27cbd3a4b8e533b43d74c751d89a9f84f286c217",
+            "size": 80605732
         }
     ],
     "game_id": "racing-game",
-    "module_hash": "9527bc64ed710637f58f861dd351a3c3be3987fdddf80cc99fcf802e374ca526",
-    "module_path": "games/racing-game/module.so",
-    "module_size": 135024,
+    "modules": {
+        "linux": "bin/linux/racing-game.so"
+    },
     "name": "racing-game",
-    "version": "0.1"
+    "version": "0.1.0"
 }

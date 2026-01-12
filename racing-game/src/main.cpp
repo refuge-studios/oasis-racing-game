@@ -100,9 +100,9 @@ extern "C" void game_init(const engine_api_t* api)
     return;
 
   g_api = api;
-  g_api->log("Initializing Racing Demo");
+  g_api->log("Initializing Racing Game");
 
-  g_scene = g_api->load_scene("games/racing-demo/assets/track.svdag");
+  g_scene = g_api->load_scene("games/racing-game/assets/track.svdag");
   if (!g_scene)
   {
     g_api->error("Failed to load scene");
@@ -268,7 +268,7 @@ extern "C" void game_on_client_join(uint32_t client_id)
   e.position[1] = -0.09f;
   e.scale       = 0.02f;
   e.flags       = ENTITY_FLAG_REMOTE;
-  e.model       = g_api->load_model("games/racing-demo/assets/car.svdag");
+  e.model       = g_api->load_model("games/racing-game/assets/car.svdag");
   e.rotation    = 3.14159265f;
   g_entities.push_back(e);
 }
@@ -298,7 +298,7 @@ extern "C" void game_on_local_client_ready(uint32_t client_id)
   e.position[1] = -0.09f;
   e.scale       = 0.02f;
   e.flags       = ENTITY_FLAG_LOCAL;
-  e.model       = g_api->load_model("games/racing-demo/assets/car.svdag");
+  e.model       = g_api->load_model("games/racing-game/assets/car.svdag");
 
   g_entities.push_back(e);
 }

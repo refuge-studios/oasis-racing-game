@@ -1,5 +1,11 @@
 {
     "assets": "assets/",
     "game_id": "racing-game",
-    "module": "build/game_module.so"
+    "modules": {
+        "linux": "bin/linux/racing-game.so",
+        "macos": "bin/macos/racing-game.dylib",
+        "windows": "bin/windows/racing-game.dll"
+    },
+    "name": "racing-game",
+    "version": "0.1.0"
 }
