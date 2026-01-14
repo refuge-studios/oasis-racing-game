@@ -76,8 +76,9 @@ jobs:
 
       # Commit and push built .so
       - name: Commit and push built file
+        shell: bash
         run: |
           cd racing-game
-          git add bin/linux/racing_game.so
-          git diff-index --quiet HEAD || git commit -m "Update racing_game.so [skip ci]"
+          git add bin/linux/racing-game.so
+          git diff-index --quiet HEAD || git commit -m "Update racing-game.so [skip ci]"
           git push origin HEAD

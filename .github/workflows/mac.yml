@@ -77,6 +77,6 @@ jobs:
       - name: Commit and push built file
         run: |
           cd racing-game
-          git add bin/macos/racing_game.dylib
-          git diff-index --quiet HEAD || git commit -m "Update racing_game.dylib [skip ci]"
+          git add bin/macos/racing-game.dylib
+          git diff-index --quiet HEAD || git commit -m "Update racing-game.dylib [skip ci]"
           git push origin HEAD

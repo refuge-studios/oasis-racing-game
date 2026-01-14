@@ -90,6 +90,6 @@ jobs:
         run: |
           cd racing-game
           $archFolder = if ($env:matrix_config_arch -eq "x64") { "x64" } else { "x86" }
-          git add "bin/windows/$archFolder/racing_game.dll"
-          git diff-index --quiet HEAD || git commit -m "Update racing_game.dll ($archFolder) [skip ci]"
+          git add "bin/windows/$archFolder/racing-game.dll"
+          git diff-index --quiet HEAD || git commit -m "Update racing-game.dll ($archFolder) [skip ci]"
           git push origin HEAD
