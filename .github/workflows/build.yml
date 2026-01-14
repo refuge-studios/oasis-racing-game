@@ -1,0 +1,71 @@
+name: Build Cross-Platform
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@v3
+
+    - name: Install dependencies (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        cd racing-game
+        if [ "$(uname)" = "Linux" ]; then
+          sudo apt update
+          sudo apt install -y build-essential libglm-dev
+        elif [ "$(uname)" = "Darwin" ]; then
+          brew update
+          brew install glm
+        fi
+
+    - name: Configure CMake
+      run: |
+        cd racing-game
+        if [ "${{ matrix.os }}" == "Windows" ]; then
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        else
+          cmake -S . -B build
+        fi
+
+    - name: Build
+      run: |
+        cd racing-game
+        if [ "${{ matrix.os }}" == "Windows" ]; then
+          cmake --build build --config Release
+        else
+          cmake --build build --config Release
+        fi
+
+    - name: Copy binaries
+      run: |
+        cd racing-game
+        mkdir -p bin/${{ matrix.os }}
+        if [ "${{ matrix.os }}" == "Windows" ]; then
+          copy build\Release\racing-game.dll bin/windows/racing-game.dll
+        elif [ "${{ matrix.os }}" == "Linux" ]; then
+          cp build/racing-game.so bin/linux/racing-game.so
+        else
+          cp build/racing-game.dylib bin/macos/racing-game.dylib
+        fi
+
+    - name: Commit & Push binaries
+      run: |
+        cd racing-game
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Update ${matrix.os} binaries"
+        file_pattern: "bin/${{ matrix.os }}/*"
+        branch: main

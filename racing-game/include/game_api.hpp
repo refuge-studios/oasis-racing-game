@@ -1,4 +1,3 @@
-// game_api.hpp
 #pragma once
 #include <cstddef>
 #include <cstdint>
@@ -7,33 +6,32 @@
 
 extern "C"
 {
-
-  // -----------------------------------------------------------------------------
-  // Game metadata (read-only, returned by the module)
-  // -----------------------------------------------------------------------------
+  // ===========================================================================
+  // Game metadata
+  // ===========================================================================
   struct game_info_t
   {
-    uint32_t    abi_version; // Must match OASIS_GAME_ABI_VERSION
-    const char* game_id;     // Stable unique ID (e.g. "racing-demo")
+    uint32_t    abi_version;
+    const char* game_id;
     const char* name;
     const char* version;
     const char* author;
     const char* description;
-    const char* homepage; // Optional (nullptr allowed)
+    const char* homepage;
   };
 
-  // -----------------------------------------------------------------------------
-  // Game entity (shared between engine & game module)
-  // -----------------------------------------------------------------------------
-  struct game_entity_t
-  {
-    uint64_t id;          // Unique entity ID (player/car)
-    void*    model;       // Optional model handle (svdag pointer)
-    float    position[3]; // world position
-    float    rotation;    // rotation around Y-axis
-    float    scale;       // uniform scale
-    uint32_t flags;       // custom flags (optional)
-  };
+  // ===========================================================================
+  // Shared entity
+  // ===========================================================================
+struct game_entity_t
+{
+    uint64_t id;
+    void*    model;
+    float    position[3];
+    float    rotation[3];  // <-- change to array
+    float    scale;
+    uint32_t flags;
+};
 
   // -----------------------------------------------------------------------------
   // Engine input codes (DO NOT expose GLFW)
@@ -214,13 +212,12 @@ extern "C"
     MOUSE_BUTTON_COUNT
   };
 
-  // -----------------------------------------------------------------------------
+  // ===========================================================================
   // Camera
-  // -----------------------------------------------------------------------------
-
+  // ===========================================================================
   enum oasis_camera_mode
   {
-    CAMERA_MODE_ENGINE_DEFAULT = 0, // engine handles camera fully
+    CAMERA_MODE_ENGINE_DEFAULT = 0,
     CAMERA_MODE_FREE,
     CAMERA_MODE_FOLLOW,
     CAMERA_MODE_FIXED
@@ -228,16 +225,13 @@ extern "C"
 
   struct oasis_camera_state
   {
-    // Spatial
-    float position[3]; // world-space
-    float rotation[3]; // pitch, yaw, roll (radians)
+    float position[3];
+    float rotation[3];
 
-    // Projection
-    float fov_y; // radians
+    float fov_y;
     float near_plane;
     float far_plane;
 
-    // Optional behavior
     float follow_distance;
     float follow_height;
     float shake_strength;
@@ -245,112 +239,73 @@ extern "C"
     oasis_camera_mode mode;
   };
 
-  // -----------------------------------------------------------------------------
-  // Engine → Game API (function table)
-  // -----------------------------------------------------------------------------
+  // ===========================================================================
+  // Engine → Game API (ABI STABLE)
+  // ===========================================================================
   struct engine_api_t
   {
-    // ABI validation
     uint32_t abi_version;
-    uint32_t _reserved0; // alignment / future use
+    uint32_t _reserved0;
 
-    // -------------------------
     // Logging
-    // -------------------------
     void (*log)(const char*);
     void (*warn)(const char*);
     void (*error)(const char*);
 
-    // -------------------------
+    // Memory (ENGINE OWNED)
+    void* (*allocate)(size_t);
+    void  (*deallocate)(void*);
+
     // Timing
-    // -------------------------
     uint64_t (*get_time_ms)();
-    float (*get_delta_time)();
+    float    (*get_delta_time)();
 
-    // -------------------------
     // Input
-    // -------------------------
+    bool (*is_key_down)(int);
+    bool (*is_key_pressed)(int);
+    bool (*is_key_released)(int);
 
-    // Keyboard
-    bool (*is_key_down)(int key);
-    bool (*is_key_pressed)(int key);
-    bool (*is_key_released)(int key);
+    bool (*is_mouse_down)(int);
+    bool (*is_mouse_pressed)(int);
+    bool (*is_mouse_released)(int);
 
-    // Mouse buttons
-    bool (*is_mouse_down)(int button);
-    bool (*is_mouse_pressed)(int button);
-    bool (*is_mouse_released)(int button);
+    void (*get_mouse_position)(float*, float*);
+    void (*get_mouse_delta)(float*, float*);
 
-    // Mouse position
-    void (*get_mouse_position)(float* x, float* y);
-    void (*get_mouse_delta)(float* dx, float* dy);
+    // Camera
+    void (*set_camera_state)(const oasis_camera_state*);
+    void (*get_camera_state)(oasis_camera_state*);
+    void (*enable_game_camera)(bool);
 
-    // -------------------------
-    // Camera control
-    // -------------------------
+    // Assets
+    void* (*load_scene)(const char*);
+    void* (*load_model)(const char*);
 
-    // Push full camera state (game-controlled camera)
-    void (*set_camera_state)(const oasis_camera_state* state);
+    void (*add_model_to_scene)(void*, void*, float, float, float);
+    void (*update_model_transform)(void*, float, float, float, float);
 
-    // Read current camera state (engine → game)
-    void (*get_camera_state)(oasis_camera_state* out_state);
+    void (*remove_model)(void*);
+    void (*remove_scene)(void*);
 
-    // Enable / disable game control of camera
-    void (*enable_game_camera)(bool enabled);
+    void (*clear_color)(const float[4]);
 
-    // -------------------------
-    // Volumetric assets
-    // -------------------------
-    void* (*load_scene)(const char* svdag_path); // returns scene handle
-    void* (*load_model)(const char* svdag_path); // returns model handle
-
-    // -------------------------
-    // Scene interaction (optional)
-    // -------------------------
-    void (*add_model_to_scene)(void* scene, void* model, float x, float y, float z);
-
-    void (*update_model_transform)(void* model, float x, float y, float z, float rotation);
-
-    // -------------------------
-    // Lifetime
-    // -------------------------
-    void (*remove_model)(void* model);
-    void (*remove_scene)(void* scene);
-
-    void (*clear_color)(const float color[4]);
-
-    // -------------------------
-    // Reserved (MUST stay zero)
-    // -------------------------
     void* _reserved[8];
   };
 
-  // -----------------------------------------------------------------------------
-  // Required module entry points
-  // -----------------------------------------------------------------------------
-  //
+  // ===========================================================================
+  // Required entry points
+  // ===========================================================================
   game_info_t* game_get_info();
 
-  //
   void game_init(const engine_api_t* api);
-
-  //
   void game_update(float dt);
-
-  //
   void game_shutdown();
 
-  // Called when a new client joins
   void game_on_client_join(uint32_t client_id);
-
-  // Called when a client disconnects
   void game_on_client_disconnect(uint32_t client_id);
+  void game_on_local_client_ready(uint32_t client_id);
 
-  // -----------------------------------------------------------------------------
-  // Optional: engine ↔ game entity query
-  // -----------------------------------------------------------------------------
-  size_t game_get_entity_count();
-
-  game_entity_t* game_get_entities(); // engine can read/write positions directly
+  size_t         game_get_entity_count();
+  game_entity_t* game_get_entities();
 
 } // extern "C"
