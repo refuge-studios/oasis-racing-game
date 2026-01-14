@@ -1,0 +1,82 @@
+name: MacOS Clang
+
+on:
+  push:
+  pull_request:
+  release:
+
+permissions:
+  contents: write  # needed to push built files
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "MacOS Clang",
+              os: macos-latest,
+              build_type: "Release",
+              cc: "clang",
+              cxx: "clang++",
+              generators: "Ninja"
+            }
+    steps:
+      # Checkout repo
+      - uses: actions/checkout@v4
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          brew install ninja cmake
+
+      # Configure CMake
+      - name: Configure
+        shell: bash
+        run: |
+          cd racing-game
+          mkdir -p build
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -G "${{ matrix.config.generators }}"
+
+      # Build
+      - name: Build
+        shell: bash
+        run: |
+          cd racing-game
+          cmake --build build --config ${{ matrix.config.build_type }}
+
+      # Prepare output folder
+      - name: Prepare bin/macos
+        shell: bash
+        run: |
+          cd racing-game
+          mkdir -p bin/macos
+
+      # Install and strip .dylib into bin/macos
+      - name: Install Strip
+        shell: bash
+        run: |
+          cd racing-game
+          cmake --install build --prefix bin/macos --strip
+
+      # Configure Git to push
+      - name: Configure Git
+        run: |
+          cd racing-game
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      # Commit and push built file
+      - name: Commit and push built file
+        run: |
+          cd racing-game
+          git add bin/macos/racing_game.dylib
+          git diff-index --quiet HEAD || git commit -m "Update racing_game.dylib [skip ci]"
+          git push origin HEAD

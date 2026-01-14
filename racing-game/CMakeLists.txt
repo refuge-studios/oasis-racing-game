@@ -55,7 +55,7 @@ if(WIN32)
     )
 elseif(APPLE)
     set_target_properties(racing_game PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/mac"
+        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
     )
 elseif(UNIX)
     set_target_properties(racing_game PROPERTIES

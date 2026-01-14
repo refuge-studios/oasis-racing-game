@@ -1,0 +1,95 @@
+name: Windows MSVC
+
+on:
+  push:
+  pull_request:
+  release:
+
+permissions:
+  contents: write  # needed to push built files
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Windows MSVC 64",
+              os: windows-latest,
+              build_type: "Release",
+              cc: "cl",
+              cxx: "cl",
+              arch: "x64",
+              generators: "Visual Studio 17 2022"
+            }
+          - {
+              name: "Windows MSVC 32",
+              os: windows-latest,
+              build_type: "Release",
+              cc: "cl",
+              cxx: "cl",
+              arch: "Win32",
+              generators: "Visual Studio 17 2022"
+            }
+    steps:
+      # Checkout repo
+      - uses: actions/checkout@v4
+
+      # Configure CMake
+      - name: Configure
+        shell: powershell
+        run: |
+          cd racing-game
+          mkdir build
+          cmake `
+            -S . `
+            -B build `
+            -A ${{ matrix.config.arch }} `
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} `
+            -G "${{ matrix.config.generators }}"
+
+      # Build
+      - name: Build
+        shell: powershell
+        run: |
+          cd racing-game
+          cmake --build build --config ${{ matrix.config.build_type }}
+
+      # Prepare output folder
+      - name: Prepare bin/windows
+        shell: powershell
+        run: |
+          cd racing-game
+          $archFolder = if ($env:matrix_config_arch -eq "x64") { "x64" } else { "x86" }
+          $path = "bin/windows/$archFolder"
+          New-Item -ItemType Directory -Force -Path $path
+
+      # Install DLL into bin/windows
+      - name: Install DLL
+        shell: powershell
+        run: |
+          cd racing-game
+          $archFolder = if ($env:matrix_config_arch -eq "x64") { "x64" } else { "x86" }
+          $dest = "bin/windows/$archFolder"
+          cmake --install build --prefix $dest --config ${{ matrix.config.build_type }}
+
+      # Configure Git
+      - name: Configure Git
+        shell: powershell
+        run: |
+          cd racing-game
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      # Commit and push DLL
+      - name: Commit and push built file
+        shell: powershell
+        run: |
+          cd racing-game
+          $archFolder = if ($env:matrix_config_arch -eq "x64") { "x64" } else { "x86" }
+          git add "bin/windows/$archFolder/racing_game.dll"
+          git diff-index --quiet HEAD || git commit -m "Update racing_game.dll ($archFolder) [skip ci]"
+          git push origin HEAD
