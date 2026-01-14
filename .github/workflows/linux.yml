@@ -6,7 +6,7 @@ on:
   release:
 
 permissions:
-  contents: write   # needed to push to repo
+  contents: write # needed to push to repo
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
               build_type: "Release",
               cc: "gcc",
               cxx: "g++",
-              generators: "Ninja"
+              generators: "Ninja",
             }
     steps:
       # Checkout the repo

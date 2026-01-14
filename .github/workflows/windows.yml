@@ -6,7 +6,7 @@ on:
   release:
 
 permissions:
-  contents: write  # needed to push built files
+  contents: write # needed to push built files
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
               cc: "cl",
               cxx: "cl",
               arch: "x64",
-              generators: "Visual Studio 17 2022"
+              generators: "Visual Studio 17 2022",
             }
     steps:
       # Checkout repo
@@ -77,5 +77,7 @@ jobs:
         run: |
           cd racing-game
           git add "bin/windows/racing-game.dll"
-          git diff-index --quiet HEAD || git commit -m "Update racing-game.dll [skip ci]"
+          if (-not (git diff-index --quiet HEAD)) {
+            git commit -m "Update racing-game.dll [skip ci]"
+          }
           git push origin HEAD
