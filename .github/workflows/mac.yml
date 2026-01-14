@@ -59,7 +59,7 @@ jobs:
           cd racing-game
           mkdir -p bin/macos
 
-      # Install and strip .dylib into bin/macos
+      # Install and strip .so into bin/macos
       - name: Install Strip
         shell: bash
         run: |
@@ -77,6 +77,6 @@ jobs:
       - name: Commit and push built file
         run: |
           cd racing-game
-          git add bin/macos/racing-game.dylib
-          git diff-index --quiet HEAD || git commit -m "Update racing-game.dylib [skip ci]"
+          git add bin/macos/racing-game.so
+          git diff-index --quiet HEAD || git commit -m "Update racing-game.so [skip ci]"
           git push origin HEAD

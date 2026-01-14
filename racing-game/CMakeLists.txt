@@ -54,55 +54,25 @@ target_link_libraries(racing_game PRIVATE glm::glm)
 # --------------------------------------------------
 set_target_properties(racing_game PROPERTIES
     OUTPUT_NAME "racing-game"
-    PREFIX ""  # remove "lib" prefix
+    PREFIX ""
 )
 
 # Platform-specific output directories
 set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-
 if(WIN32)
     set_target_properties(racing_game PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
-        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
-        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
     )
 elseif(APPLE)
     set_target_properties(racing_game PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
         LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
-        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
     )
 elseif(UNIX)
     set_target_properties(racing_game PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
         LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
-        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
     )
 endif()
 
 if(NOT MSVC)
     target_compile_options(racing_game PRIVATE -Werror)
-endif()
-
-# --------------------------------------------------
-# Install rules: install directly into bin/<platform>
-# --------------------------------------------------
-if(WIN32)
-    install(TARGETS racing_game
-        RUNTIME DESTINATION .      # put DLL directly in prefix (bin/windows)
-        LIBRARY DESTINATION .
-        ARCHIVE DESTINATION .
-    )
-elseif(APPLE)
-    install(TARGETS racing_game
-        RUNTIME DESTINATION .      # put .dylib directly in prefix (bin/macos)
-        LIBRARY DESTINATION .
-        ARCHIVE DESTINATION .
-    )
-elseif(UNIX)
-    install(TARGETS racing_game
-        RUNTIME DESTINATION .      # put .so directly in prefix (bin/linux)
-        LIBRARY DESTINATION .
-        ARCHIVE DESTINATION .
-    )
 endif()
