@@ -62,14 +62,20 @@ set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 if(WIN32)
     set_target_properties(racing_game PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
+        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
+        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/windows"
     )
 elseif(APPLE)
     set_target_properties(racing_game PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
         LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
+        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
     )
 elseif(UNIX)
     set_target_properties(racing_game PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
         LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
+        ARCHIVE_OUTPUT_DIRECTORY "${BIN_DIR}/linux"
     )
 endif()
 

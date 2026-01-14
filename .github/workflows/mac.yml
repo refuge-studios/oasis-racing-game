@@ -24,7 +24,6 @@ jobs:
               cxx: "clang++",
               generators: "Ninja",
             }
-
     steps:
       # Checkout repo
       - uses: actions/checkout@v4
@@ -69,23 +68,15 @@ jobs:
 
       # Configure Git to push
       - name: Configure Git
-        shell: bash
         run: |
           cd racing-game
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      # Commit and push built file safely
+      # Commit and push built file
       - name: Commit and push built file
-        shell: bash
         run: |
           cd racing-game
-          # Find the dylib in bin/macos
-          LIB_FILE=$(ls bin/macos/*.dylib 2>/dev/null)
-          if [ -f "$LIB_FILE" ]; then
-              git add "$LIB_FILE"
-              git diff-index --quiet HEAD || git commit -m "Update racing-game.dylib [skip ci]"
-              git push origin HEAD
-          else
-              echo "No dylib found to commit, skipping git push."
-          fi
+          git add bin/macos/racing-game.dylib
+          git diff-index --quiet HEAD || git commit -m "Update racing-game.dylib [skip ci]"
+          git push origin HEAD
