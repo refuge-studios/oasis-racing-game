@@ -15,6 +15,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        useCloudCache: false
+        useLocalCache: false
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
@@ -24,10 +27,8 @@ jobs:
       run: |
         cd racing-game
         if [ "$(uname)" = "Linux" ]; then
-          sudo apt update
           sudo apt install -y build-essential libglm-dev
         elif [ "$(uname)" = "Darwin" ]; then
-          brew update
           brew install glm
         fi
 
@@ -52,12 +53,13 @@ jobs:
     - name: Copy binaries
       run: |
         cd racing-game
-        mkdir -p bin/${{ matrix.os }}
-        if [ "${{ matrix.os }}" == "Windows" ]; then
+        mkdir -p bin/windows bin/linux bin/macos
+
+        if [ "${RUNNER_OS}" == "Windows" ]; then
           copy build\Release\racing-game.dll bin/windows/racing-game.dll
-        elif [ "${{ matrix.os }}" == "Linux" ]; then
+        elif [ "${RUNNER_OS}" == "Linux" ]; then
           cp build/racing-game.so bin/linux/racing-game.so
-        else
+        elif [ "${RUNNER_OS}" == "macOS" ]; then
           cp build/racing-game.dylib bin/macos/racing-game.dylib
         fi
 
