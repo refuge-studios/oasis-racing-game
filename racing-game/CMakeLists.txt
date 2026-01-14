@@ -25,11 +25,17 @@ target_include_directories(racing_game
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Dependencies
-find_package(glm REQUIRED)
-target_link_libraries(racing_game
-    PRIVATE glm::glm
+# --------------------------------------------------
+# Dependencies: FetchContent for glm
+# --------------------------------------------------
+include(FetchContent)
+
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG        0.9.9.8  # stable release
 )
+FetchContent_MakeAvailable(glm)
 
 # --------------------------------------------------
 # Output configuration
@@ -49,7 +55,7 @@ if(WIN32)
     )
 elseif(APPLE)
     set_target_properties(racing_game PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/macos"
+        LIBRARY_OUTPUT_DIRECTORY "${BIN_DIR}/mac"
     )
 elseif(UNIX)
     set_target_properties(racing_game PROPERTIES
@@ -58,7 +64,7 @@ elseif(UNIX)
 endif()
 
 
-# Optional: add position-independent code for shared libraries
+# add position-independent code for shared libraries
 set_target_properties(racing_game PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )

@@ -19,18 +19,14 @@ jobs:
         useCloudCache: false
         useLocalCache: false
 
-    - name: Setup CMake
+    - name: Get CMake and Ninja
       uses: lukka/get-cmake@latest
-
-    - name: Install dependencies (Linux/macOS)
-      if: runner.os != 'Windows'
+      id: cmake-and-ninja
+      
+    - name: Use CMake and Ninja paths
       run: |
-        cd racing-game
-        if [ "$(uname)" = "Linux" ]; then
-          sudo apt install -y build-essential libglm-dev
-        elif [ "$(uname)" = "Darwin" ]; then
-          brew install glm
-        fi
+        echo "CMake is at: ${{ steps.cmake-and-ninja.outputs.cmake-path }}"
+        echo "Ninja is at: ${{ steps.cmake-and-ninja.outputs.ninja-path }}"
 
     - name: Configure CMake
       run: |
@@ -56,11 +52,11 @@ jobs:
         mkdir -p bin/windows bin/linux bin/macos
 
         if [ "${RUNNER_OS}" == "Windows" ]; then
-          copy build\Release\racing-game.dll bin/windows/racing-game.dll
+          copy bin\windows\racing-game.dll bin/windows/racing-game.dll
         elif [ "${RUNNER_OS}" == "Linux" ]; then
-          cp build/racing-game.so bin/linux/racing-game.so
+          cp bin/linux/racing-game.so bin/linux/racing-game.so
         elif [ "${RUNNER_OS}" == "macOS" ]; then
-          cp build/racing-game.dylib bin/macos/racing-game.dylib
+          cp bin/mac/racing-game.dylib bin/mac/racing-game.dylib
         fi
 
     - name: Commit & Push binaries
