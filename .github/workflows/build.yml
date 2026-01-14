@@ -65,6 +65,5 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "Update ${matrix.os} binaries"
-        file_pattern: "bin/${{ matrix.os }}/*"
+        file_pattern: "racing-game/bin/${{ matrix.os }}/*"
         branch: main
-      working-directory: racing-game
