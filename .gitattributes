@@ -53,8 +53,3 @@
 *.tar binary
 *.gz  binary
 *.7z  binary
-
-# ------------------------
-# Merge strategies
-# ------------------------
-*.lock merge=ours    # e.g., package-lock.json, CMake locks
