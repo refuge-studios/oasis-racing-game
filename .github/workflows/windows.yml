@@ -25,15 +25,6 @@ jobs:
               arch: "x64",
               generators: "Visual Studio 17 2022"
             }
-          - {
-              name: "Windows MSVC 32",
-              os: windows-latest,
-              build_type: "Release",
-              cc: "cl",
-              cxx: "cl",
-              arch: "Win32",
-              generators: "Visual Studio 17 2022"
-            }
     steps:
       # Checkout repo
       - uses: actions/checkout@v4
