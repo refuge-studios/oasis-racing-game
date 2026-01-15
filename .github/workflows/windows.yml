@@ -73,11 +73,22 @@ jobs:
 
       # Commit and push DLL
       - name: Commit and push built file
+        if: github.event_name == 'push'
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
           cd racing-game
-          git add "bin/windows/racing-game.dll"
-          if (-not (git diff-index --quiet HEAD)) {
-            git commit -m "Update racing-game.dll [skip ci]"
+
+          if (-not (Test-Path "bin/windows/racing-game.dll")) {
+              throw "racing-game.dll not found"
           }
+
+          git add "bin/windows/racing-game.dll"
+
+          git diff-index --quiet HEAD
+          if ($LASTEXITCODE -ne 0) {
+              git commit -m "Update racing-game.dll [skip ci]"
+          }
+
+          git pull --rebase origin main
           git push origin HEAD
