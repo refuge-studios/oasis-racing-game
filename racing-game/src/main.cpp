@@ -1,17 +1,36 @@
 #include "game_api.hpp"
+#include <algorithm>
 #include <cmath>
 #include <glm/glm.hpp>
 #include <vector>
 
 // ============================================================================
-// Flags
+// Entity Flags (strongly typed)
 // ============================================================================
-enum entity_flags : uint32_t
+enum class entity_flags : uint32_t
 {
-  ENTITY_FLAG_NONE   = 0,
-  ENTITY_FLAG_LOCAL  = 1 << 0,
-  ENTITY_FLAG_REMOTE = 1 << 1,
+  NONE   = 0,
+  LOCAL  = 1 << 0,
+  REMOTE = 1 << 1
 };
+
+// Bitwise operators for entity_flags
+inline entity_flags operator|(entity_flags a, entity_flags b)
+{
+  return static_cast<entity_flags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+}
+inline entity_flags operator&(entity_flags a, entity_flags b)
+{
+  return static_cast<entity_flags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+}
+inline entity_flags& operator|=(entity_flags& a, entity_flags b)
+{
+  return a = a | b;
+}
+inline entity_flags& operator&=(entity_flags& a, entity_flags b)
+{
+  return a = a & b;
+}
 
 // ============================================================================
 // Per-entity driving state
@@ -24,7 +43,7 @@ struct drive_state
 };
 
 // ============================================================================
-// GAME STATE (ENGINE-OWNED)
+// GAME STATE
 // ============================================================================
 struct game_state
 {
@@ -32,19 +51,15 @@ struct game_state
 
   void* scene = nullptr;
 
-  // Entities
   std::vector<game_entity_t> entities;
+  std::vector<drive_state>   drives;
 
-  // Drive states
-  std::vector<drive_state> drives;
-
-  // Camera
   oasis_camera_state camera{};
 
   uint32_t local_client_id = UINT32_MAX;
 };
 
-// SINGLE global
+// SINGLE global instance
 static game_state* g = nullptr;
 
 // ============================================================================
@@ -52,13 +67,18 @@ static game_state* g = nullptr;
 // ============================================================================
 extern "C" game_info_t* game_get_info()
 {
-  static game_info_t info{OASIS_GAME_ABI_VERSION,
-                          "racing-game",
-                          "Racing Game",
-                          "1.0.0",
-                          "Aidan Sanders",
-                          "Minimal racing demo",
-                          "https://oasis.refugestudios.com.au"};
+  static game_info_t info {
+    OASIS_GAME_ABI_VERSION,
+    "racing-game",
+    "Racing Game",
+    "1.0.0",
+    "Aidan Sanders",
+    "Minimal racing demo",
+    "https://oasis.refugestudios.com.au",
+    "~/oasis/games/racing-game/assets/thumbnail.png",
+    "~/oasis/games/racing-game/assets/thumbnail.png",
+    ""
+  };
   return &info;
 }
 
@@ -68,7 +88,7 @@ extern "C" game_info_t* game_get_info()
 static game_entity_t* find_local_entity()
 {
   for (auto& e : g->entities)
-    if (e.flags & ENTITY_FLAG_LOCAL)
+    if ((static_cast<entity_flags>(e.flags) & entity_flags::LOCAL) != entity_flags::NONE)
       return &e;
   return nullptr;
 }
@@ -79,11 +99,10 @@ static drive_state* find_drive(uint64_t id)
     if (d.entity_id == id)
       return &d;
 
+  // Not found: create a new drive_state
   g->drives.push_back({});
   drive_state& d = g->drives.back();
   d.entity_id    = id;
-  d.speed        = 0.0f;
-  d.roll         = 0.0f;
   return &d;
 }
 
@@ -101,27 +120,21 @@ static void add_entity(const game_entity_t& e)
 
 static void remove_entity(uint64_t id)
 {
-  // Remove entity
-  for (auto it = g->entities.begin(); it != g->entities.end(); ++it)
+  // Remove entity model
+  auto it = std::find_if(g->entities.begin(), g->entities.end(),
+                         [id](const game_entity_t& e) { return e.id == id; });
+  if (it != g->entities.end())
   {
-    if (it->id == id)
-    {
-      if (it->model)
-        g->api->remove_model(it->model);
-      g->entities.erase(it);
-      break;
-    }
+    if (it->model)
+      g->api->remove_model(it->model);
+    g->entities.erase(it);
   }
 
   // Remove drive state
-  for (auto it = g->drives.begin(); it != g->drives.end(); ++it)
-  {
-    if (it->entity_id == id)
-    {
-      g->drives.erase(it);
-      break;
-    }
-  }
+  auto dit = std::find_if(g->drives.begin(), g->drives.end(),
+                          [id](const drive_state& d) { return d.entity_id == id; });
+  if (dit != g->drives.end())
+    g->drives.erase(dit);
 }
 
 // ============================================================================
@@ -133,9 +146,7 @@ extern "C" void game_init(const engine_api_t* api)
     return;
 
   if (!g)
-  {
     g = new game_state{};
-  }
 
   g->api = api;
   g->entities.clear();
@@ -152,6 +163,7 @@ extern "C" void game_init(const engine_api_t* api)
   g->camera.near_plane  = 0.1f;
   g->camera.far_plane   = 1000.0f;
   g->camera.mode        = CAMERA_MODE_FOLLOW;
+
   api->enable_game_camera(true);
 }
 
@@ -179,17 +191,17 @@ extern "C" void game_update(float dt)
 {
   if (!g || !g->api)
     return;
-
+g->api->log("Racing game Update");
   set_clear_color();
 
-  game_entity_t* car = find_local_entity();
+  auto* car = find_local_entity();
   if (!car)
   {
     g->api->set_camera_state(&g->camera);
     return;
   }
 
-  drive_state* drive = find_drive(car->id);
+  auto* drive = find_drive(car->id);
   if (!drive)
     return;
 
@@ -201,19 +213,19 @@ extern "C" void game_update(float dt)
   constexpr float MAX_SPEED    = 1.0f;
   constexpr float DRAG         = 2.0f;
   constexpr float STEER_RATE   = 22.0f;
-  constexpr float MAX_CAM_ROLL = 0.25f; // ~14 degrees
+  constexpr float MAX_CAM_ROLL = 0.25f;
   constexpr float ROLL_DAMP    = 4.0f;
 
   // ---------------------------------------------------------------------------
   // Input
   // ---------------------------------------------------------------------------
-  float throttle = g->api->is_key_down(KEY_W) ? 1.0f : 0.0f;
-  float brake    = g->api->is_key_down(KEY_S) ? 1.0f : 0.0f;
+  float throttle = g->api->is_key_down(static_cast<int>(KEY_W)) ? 1.0f : 0.0f;
+  float brake    = g->api->is_key_down(static_cast<int>(KEY_S)) ? 1.0f : 0.0f;
 
   float steer = 0.0f;
-  if (g->api->is_key_down(KEY_D))
+  if (g->api->is_key_down(static_cast<int>(KEY_D)))
     steer -= 1.0f;
-  if (g->api->is_key_down(KEY_A))
+  if (g->api->is_key_down(static_cast<int>(KEY_A)))
     steer += 1.0f;
 
   // ---------------------------------------------------------------------------
@@ -225,7 +237,7 @@ extern "C" void game_update(float dt)
   drive->speed = glm::clamp(drive->speed, -MAX_SPEED * 0.4f, MAX_SPEED);
 
   // ---------------------------------------------------------------------------
-  // Steering (speed-scaled)
+  // Steering
   // ---------------------------------------------------------------------------
   float speed_factor = std::min(std::abs(drive->speed) / MAX_SPEED, 1.0f);
   car->rotation[1] += steer * STEER_RATE * speed_factor * dt;
@@ -234,12 +246,11 @@ extern "C" void game_update(float dt)
   // Forward motion
   // ---------------------------------------------------------------------------
   glm::vec3 forward{std::sin(car->rotation[1]), 0.0f, std::cos(car->rotation[1])};
-
   car->position[0] += forward.x * drive->speed * dt;
   car->position[2] += forward.z * drive->speed * dt;
 
   // ---------------------------------------------------------------------------
-  // Camera roll (visual feedback)
+  // Camera roll
   // ---------------------------------------------------------------------------
   float target_roll = -steer * speed_factor * MAX_CAM_ROLL;
   drive->roll += (target_roll - drive->roll) * std::min(1.0f, ROLL_DAMP * dt);
@@ -251,7 +262,7 @@ extern "C" void game_update(float dt)
   constexpr float FOLLOW_H    = 0.25f;
   constexpr float CAM_DAMP    = 6.0f;
 
-  glm::vec3 car_pos(car->position[0], car->position[1], car->position[2]);
+  glm::vec3 car_pos{car->position[0], car->position[1], car->position[2]};
   glm::vec3 desired = car_pos - forward * FOLLOW_DIST + glm::vec3(0.0f, FOLLOW_H, 0.0f);
 
   for (int i = 0; i < 3; ++i)
@@ -273,13 +284,15 @@ extern "C" void game_update(float dt)
 extern "C" void game_on_local_client_ready(uint32_t id)
 {
   g->local_client_id = id;
+  g->api->log("Spawned Local Entity");
 
   game_entity_t e{};
   e.id          = id;
   e.position[1] = -0.09f;
   e.scale       = 0.02f;
-  e.flags       = ENTITY_FLAG_LOCAL;
+  e.flags       = static_cast<uint32_t>(entity_flags::LOCAL);
   e.model       = g->api->load_model("games/racing-game/assets/car.svdag");
+
   add_entity(e);
 }
 
@@ -288,12 +301,15 @@ extern "C" void game_on_client_join(uint32_t id)
   if (id == g->local_client_id)
     return;
 
+  g->api->log("Spawned Remote Entity");
+
   game_entity_t e{};
   e.id          = id;
   e.position[1] = -0.09f;
   e.scale       = 0.02f;
-  e.flags       = ENTITY_FLAG_REMOTE;
+  e.flags       = static_cast<uint32_t>(entity_flags::REMOTE);
   e.model       = g->api->load_model("games/racing-game/assets/car.svdag");
+
   add_entity(e);
 }
 

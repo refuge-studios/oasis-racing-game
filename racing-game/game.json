@@ -1,11 +1,19 @@
 {
-    "assets": "assets/",
-    "game_id": "racing-game",
-    "modules": {
-        "linux": "bin/linux/racing-game.so",
-        "macos": "bin/macos/racing-game.dylib",
-        "windows": "bin/windows/racing-game.dll"
-    },
-    "name": "racing-game",
-    "version": "0.1.0"
+  "game_id": "racing-game",
+  "name": "Simple Racing Game",
+  "authors": "Aidan Sanders",
+  "description": "A lightweight arcade-style racing game.",
+  "version": "1.0.0",
+
+  "thumbnail": "assets/thumbnail.png",
+  "background": "assets/background.png",
+
+  "assets": "assets/",
+  "modules": {
+    "windows": "bin/windows/racing-game.dll",
+    "linux": "bin/linux/racing-game.so",
+    "macos": "bin/macos/racing-game.dylib"
+  },
+
+  "controller": false
 }

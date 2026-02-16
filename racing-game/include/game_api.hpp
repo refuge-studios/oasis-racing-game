@@ -1,36 +1,49 @@
+// game_api.hpp
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 #define OASIS_GAME_ABI_VERSION 1
 
 extern "C"
 {
-  // ===========================================================================
-  // Game metadata
-  // ===========================================================================
-  struct game_info_t
-  {
-    uint32_t    abi_version;
-    const char* game_id;
-    const char* name;
-    const char* version;
-    const char* author;
-    const char* description;
-    const char* homepage;
-  };
 
-  // ===========================================================================
-  // Shared entity
-  // ===========================================================================
+struct oasis_raycast_hit
+{
+  bool  hit = false;
+  float position[3];
+  float normal[3];
+  float distance = 0.0f;
+};
+
+// ===========================================================================
+// Game metadata
+// ===========================================================================
+struct game_info_t {
+  uint32_t    abi_version = 0;
+  std::string game_id;
+  std::string name;
+  std::string version;
+  std::string author;
+  std::string description;
+  std::string homepage;
+  std::string thumbnail;
+  std::string background;
+  std::string root_path;
+};
+
+// ===========================================================================
+// Shared entity
+// ===========================================================================
 struct game_entity_t
 {
-    uint64_t id;
-    void*    model;
-    float    position[3];
-    float    rotation[3];  // <-- change to array
-    float    scale;
-    uint32_t flags;
+  uint64_t id;
+  void*    model;
+  float    position[3];
+  float    rotation[3]; 
+  float    scale;
+  uint32_t flags;
 };
 
   // -----------------------------------------------------------------------------
@@ -247,10 +260,19 @@ struct game_entity_t
     uint32_t abi_version;
     uint32_t _reserved0;
 
+     // Low-level UI drawing (SAFE)
+    struct ui_draw_list_t
+    {
+        void* _internal; // opaque to game module
+    };
+
     // Logging
     void (*log)(const char*);
     void (*warn)(const char*);
     void (*error)(const char*);
+
+
+
 
     // Memory (ENGINE OWNED)
     void* (*allocate)(size_t);
@@ -259,6 +281,10 @@ struct game_entity_t
     // Timing
     uint64_t (*get_time_ms)();
     float    (*get_delta_time)();
+
+    // Cursor
+    void (*set_cursor_locked)(bool locked);
+    bool (*is_cursor_locked)();
 
     // Input
     bool (*is_key_down)(int);
@@ -287,7 +313,124 @@ struct game_entity_t
     void (*remove_model)(void*);
     void (*remove_scene)(void*);
 
+    bool (*raycast_scene)(
+      void* scene,
+      const float origin[3],
+      const float direction[3],
+      float max_distance,
+      oasis_raycast_hit* out_hit
+    );
+
     void (*clear_color)(const float[4]);
+
+// ---------------------------
+    // ImGui / UI API
+    // ---------------------------
+    void (*ui_begin_frame)();
+    void (*ui_end_frame)();
+
+    bool (*ui_begin_window)(const char* name, bool* open, int flags);
+    void (*ui_end_window)();
+
+    void (*ui_text)(const char* fmt, ...);
+    bool (*ui_button)(const char* label);
+    bool (*ui_slider_float)(const char* label, float* value, float min, float max);
+    bool (*ui_slider_int)(const char* label, int* value, int min, int max);
+    bool (*ui_checkbox)(const char* label, bool* value);
+    void (*ui_separator)();
+    void (*ui_same_line)();
+    void (*ui_spacing)();
+
+    void (*ui_push_style_color)(int idx, float r, float g, float b, float a);
+    void (*ui_pop_style_color)();
+    void (*ui_push_style_var_float)(int idx, float value);
+    void (*ui_pop_style_var)();
+
+    void (*ui_columns)(int count, const char* id, bool border);
+    void (*ui_next_column)();
+
+    // ---------------------------
+    // Extended ImGui API
+    // ---------------------------
+    void (*ui_set_next_window_pos)(float x, float y, int cond, float pivot_x, float pivot_y);
+    void (*ui_set_next_window_bg_alpha)(float alpha);
+    void (*ui_set_window_font_scale)(float scale);
+    void (*ui_text_unformatted)(const char* text);
+    void (*ui_push_style_color_vec4)(int idx, float r, float g, float b, float a);
+
+    // Expose useful ImGui constants
+    int (*ui_flags_no_decoration)(); // returns ImGuiWindowFlags_NoDecoration
+    int (*ui_flags_no_inputs)();     // returns ImGuiWindowFlags_NoInputs
+
+    int (*ui_col_text)();            // returns ImGuiCol_Text
+    int (*ui_cond_always)();         // returns ImGuiCond_Always
+
+    // Display size
+    void (*ui_get_display_size)(float* width, float* height);
+
+
+// ---------------------------
+// ImDrawFlags helpers
+// ---------------------------
+int (*ui_draw_flags_round_left)();
+int (*ui_draw_flags_round_right)();
+int (*ui_draw_flags_round_all)();
+
+// Low-level UI drawing (SAFE)
+struct ui_draw_list_t;
+
+ui_draw_list_t* (*ui_get_draw_list)();
+
+// Existing rects...
+void (*ui_draw_rect_filled)(
+    ui_draw_list_t* dl,
+    float x1, float y1, float x2, float y2,
+    float r, float g, float b, float a,
+    float rounding,
+    int flags
+);
+
+void (*ui_draw_rect_filled_gradient)(
+    ui_draw_list_t* dl,
+    float x1, float y1,
+    float x2, float y2,
+    float r1, float g1, float b1, float a1,
+    float r2, float g2, float b2, float a2
+);
+
+void (*ui_draw_rect)(
+    ui_draw_list_t* dl,
+    float x1, float y1,
+    float x2, float y2,
+    float r, float g, float b, float a,
+    float rounding,
+    float thickness
+);
+
+void (*ui_draw_line)(
+    ui_draw_list_t* dl,
+    float x1, float y1,
+    float x2, float y2,
+    float r, float g, float b, float a,
+    float thickness
+);
+
+void (*ui_dummy)(float w, float h);
+
+// ---------------------------
+// Extended Window Control
+// ---------------------------
+void (*ui_set_next_window_size)(float w, float h, int cond);
+void (*ui_set_column_width)(int column_index, float width);
+
+// ---------------------------
+// Extra Window Flags
+// ---------------------------
+int (*ui_flags_no_resize)();   // ImGuiWindowFlags_NoResize
+
+
+float (*ui_calc_text_width)(const char* text);
+float (*ui_calc_text_height)(const char* text);
 
     void* _reserved[8];
   };
